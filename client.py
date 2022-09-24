@@ -17,15 +17,12 @@ def send(msg):
     send_length += b' ' * (HEADER - len(send_length)) # make sure it is 64 bytes
     client.send(send_length)
     client.send(message)
-    print(client.recv(2048).decode(FORMAT)) # ideally 2048 would be the same protocol (header)
-                                            # used to send a message from client to the server
 
-send("Hello World!")
-input()
-send("Hello Everyone!")
-input()
-send("Hello Tim!")
-
-send(DISCONNECT_MESSAGE)
+while True:
+    msg = client.recv(HEADER).decode(FORMAT) # receive message from server
+    print(msg)
+    if msg == "OK":
+        play = input("Play: ")
+        send(play)
 
 
