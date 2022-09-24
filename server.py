@@ -48,8 +48,12 @@ def start(): # start the socket server
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         # number of client connections
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}") # minus the start thread
-
+        # Se nao rodar, so trocar para activeCount()
+        print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}") # minus the start thread
+        if threading.active_count() - 1 == 1:
+            print("Waiting for another player")
+        if threading.active_count() - 1 == 2:
+            break
 
 print("[STARTING] server is starting...")
 start()
