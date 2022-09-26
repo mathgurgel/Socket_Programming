@@ -13,8 +13,8 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 server.bind(ADDR) 
 
-players = []   # list of players
-plays = []     # plays made at some round
+players = []   # list of players. type :: [(Conn, Addr)]
+plays = []     # plays made at some round. type :: [String, [Conn, Adr]]
 num_rounds = 0 # number of game rounds
 
 
@@ -30,21 +30,18 @@ def handle_client(conn, addr):
             msg_length = int(msg_length) # how many bytes
             msg = conn.recv(msg_length).decode(FORMAT)
 
-            # if msg == DISCONNECT_MESSAGE:
-            #     connected = False
-            # else:
             global plays
             plays.append([msg, [conn, addr]])
-
-            # conn.send("Msg received".encode(FORMAT)) # send message to connected client
 
     conn.close()
 
 
+TIE = (-1, -1)
+
 def game_result(player1, player2, play1, play2):
 
     if play1 == play2:
-        return (-1, -1)
+        return TIE
 
     # return who won the game
     if play1 == "rock":
@@ -74,14 +71,14 @@ def game():
     global players
     global num_rounds
 
-    TIE = (-1, -1)
-
     if len(plays) == 2:
         is_game = True
     else:
         is_game = False
 
     if is_game:
+
+        # get game result
         res_conn, res_adrr = game_result(plays[0][ADDR_POS], plays[1][ADDR_POS], plays[0][PLAY_POS], plays[1][PLAY_POS])
 
         for [_, (conn, addr)] in plays:
@@ -99,6 +96,8 @@ def game():
             print("result sent")
             
             time.sleep(SLEEP_TIME) # delay for OS work
+
+            # allow players to do next play
             conn.send("OK".encode(FORMAT))
             print("ok sent\n")
         
