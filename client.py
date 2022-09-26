@@ -24,5 +24,7 @@ while True:
     if msg == "OK":
         play = input("Play: ")
         send(play)
+    elif msg == "Disconnect":
+        print(msg)
 
 
