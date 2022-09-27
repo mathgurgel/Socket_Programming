@@ -3,7 +3,8 @@ import socket
 HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+DISCONNECT_MESSAGE = "DISCONNECT"
+ALLOW_SEND = "OK"
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 
@@ -21,10 +22,11 @@ def send(msg):
 while True:
     msg = client.recv(HEADER).decode(FORMAT) # receive message from server
     print(msg)
-    if msg == "OK":
+    if msg == ALLOW_SEND:
         play = input("Play: ")
         send(play)
-    elif msg == "Disconnect":
-        print(msg)
+    elif msg == DISCONNECT_MESSAGE:
+        send(msg) # warn handle_client to end connection
+        break
 
 

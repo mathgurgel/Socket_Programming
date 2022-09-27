@@ -7,7 +7,8 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+DISCONNECT_MESSAGE = "DISCONNECT"
+ALLOW_SEND = "OK"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 server.bind(ADDR) 
@@ -29,11 +30,11 @@ def handle_client(conn, addr):
             msg_length = int(msg_length) # how many bytes
             msg = conn.recv(msg_length).decode(FORMAT)
 
-            global plays
-            plays.append([msg, [conn, addr]])
-
-            # if num_rounds == 5:
-            #     connected = False
+            if msg != DISCONNECT_MESSAGE:
+                global plays
+                plays.append([msg, [conn, addr]])
+            else:
+                connected = False
 
     conn.close()
 
@@ -82,7 +83,6 @@ def game():
         # get game result
         handleWin = handleResult(plays[0][PLAY_POS], plays[1][PLAY_POS])
 
-
         for [msg, (conn, addr)] in plays:
 
             print(addr)
@@ -92,18 +92,21 @@ def game():
             # send result
             if handleWin != TIE:
                 if msg == handleWin:
-                    conn.send("You WON".encode(FORMAT))
+                    conn.send("You WON\n".encode(FORMAT))
                 else:
-                    conn.send("You LOSE".encode(FORMAT))
+                    conn.send("You LOSE\n".encode(FORMAT))
             else:
                 conn.send("TIE".encode(FORMAT))
             print("result sent")
             
             time.sleep(SLEEP_TIME) # delay for OS work
 
-            if num_rounds < 5: # allow players to do next play
-                conn.send("OK".encode(FORMAT))
+            if num_rounds != 5:
+                conn.send(ALLOW_SEND.encode(FORMAT))
                 print("ok sent\n")
+            else: # max of rounds, game end
+                conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
+                print("disconnect sent\n")
         
         plays = []
 
@@ -120,7 +123,7 @@ def start(): # start the socket server
         thread.start()
 
         players.append((conn, addr, total)) # add client to list of players
-        conn.send("OK".encode(FORMAT)) # allows client to send messages
+        conn.send(ALLOW_SEND.encode(FORMAT)) # allows client to send messages
 
         active_connections = threading.active_count() - 1 # minus the start thread
         print(f"[ACTIVE CONNECTIONS] {active_connections}") 
@@ -129,11 +132,8 @@ def start(): # start the socket server
         elif active_connections == 2:
             break
 
-    # game_end = False
-    while num_rounds != 5:
+    while num_rounds < 5:
         game()
-        # global num_rounds
-        # if num_rounds == 5: game_end = True
 
 print("[STARTING] server is starting...")
 start()
