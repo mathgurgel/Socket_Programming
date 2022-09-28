@@ -13,7 +13,7 @@ ALLOW_SEND = "OK"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 server.bind(ADDR) 
 
-players = []   # list of players. type :: [(Conn, Addr)]
+players = []   # list of players. type :: [Int, (Conn, Addr)]
 plays = []     # plays made at some round. type :: [String, [Conn, Adr]]
 num_rounds = 0 # number of game rounds
 
@@ -37,9 +37,10 @@ def handle_client(conn, addr):
                 connected = False
 
     conn.close()
+    print("Connection closed\n")
 
 
-TIE = (-1, -1)
+TIE = "tie"
 
 def handleResult(jogadaPlayer1, jogadaPlayer2):
 
@@ -61,9 +62,58 @@ def handleResult(jogadaPlayer1, jogadaPlayer2):
         return jogadaPlayer2
 
 
+def incr_num_wins(winner_addr):
+    
+    global num_wins
+
+    for i, [num_wins, (conn, addr)] in enumerate(players):
+        if addr == winner_addr:
+            players[i] = [num_wins + 1, (conn, addr)]
+
+
 SLEEP_TIME = 0.1
+
 PLAY_POS = 0
+WINS_POS = 0
 ADDR_POS = 1
+CONN_POS = 0
+
+def game_result():
+
+    p1 = players[0]
+    p2 = players[1]
+
+    p1_num_wins = p1[WINS_POS]
+    p2_num_wins = p2[WINS_POS]
+
+    p1_conn = p1[ADDR_POS][CONN_POS]
+    p2_conn = p2[ADDR_POS][CONN_POS]
+
+    time.sleep(SLEEP_TIME) # delay for OS work
+
+    if p1_num_wins == p2_num_wins: # tie
+        p1_conn.send("Final result is a TIE!\n".encode(FORMAT))
+        p2_conn.send("Final result is a TIE!\n".encode(FORMAT))
+    else: 
+        if p1_num_wins > p2_num_wins: # p1 won
+            winner_conn = p1_conn
+            loser_conn  = p2_conn
+        else: # p2 won
+            winner_conn = p2_conn
+            loser_conn  = p1_conn
+
+        winner_conn.send("You won the game!\n".encode(FORMAT))
+        loser_conn.send("You lose the game!\n".encode(FORMAT))
+    
+    time.sleep(SLEEP_TIME)
+
+    for [num_wins, (conn, _)] in players:
+        conn.send(f"Number of wins: {num_wins}\n".encode(FORMAT))
+        time.sleep(SLEEP_TIME)
+
+        conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
+        print("disconnect sent\n")
+
 
 def game():
 
@@ -83,20 +133,25 @@ def game():
         # get game result
         handleWin = handleResult(plays[0][PLAY_POS], plays[1][PLAY_POS])
 
+        count = 0 # loop counter
+
         for [msg, (conn, addr)] in plays:
 
             print(addr)
-    
+
+            count = count + 1
+
             time.sleep(SLEEP_TIME) # delay for OS work
 
             # send result
             if handleWin != TIE:
                 if msg == handleWin:
+                    incr_num_wins(addr)
                     conn.send("You WON\n".encode(FORMAT))
                 else:
                     conn.send("You LOSE\n".encode(FORMAT))
             else:
-                conn.send("TIE".encode(FORMAT))
+                conn.send("TIE\n".encode(FORMAT))
             print("result sent")
             
             time.sleep(SLEEP_TIME) # delay for OS work
@@ -104,12 +159,14 @@ def game():
             if num_rounds != 5:
                 conn.send(ALLOW_SEND.encode(FORMAT))
                 print("ok sent\n")
-            else: # max of rounds, game end
-                conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
-                print("disconnect sent\n")
+            elif (count % 2) == 0: # max of rounds, game end, sent match result to both clients
+                is_game = False
+                break
         
         plays = []
 
+    if num_rounds == 5:
+        game_result()
 
 
 def start(): # start the socket server
@@ -117,12 +174,12 @@ def start(): # start the socket server
     server.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:
-        total = 0
         conn, addr = server.accept() # wait (block) for a new connection to the server
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
 
-        players.append((conn, addr, total)) # add client to list of players
+        num_wins = 0
+        players.append([num_wins, (conn, addr)]) # add client to list of players
         conn.send(ALLOW_SEND.encode(FORMAT)) # allows client to send messages
 
         active_connections = threading.active_count() - 1 # minus the start thread
