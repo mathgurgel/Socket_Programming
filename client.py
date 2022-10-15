@@ -3,6 +3,7 @@ import tkinter as tk
 import threading
 import pygame
 import button
+import time
 
 HEADER = 64
 PORT = 5050
@@ -11,6 +12,7 @@ DISCONNECT_MESSAGE = "DISCONNECT"
 ALLOW_SEND = "OK"
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
+allow_button = False
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -25,6 +27,8 @@ def send(msg):
 
 
 def pygame_gui():
+
+    global allow_button
 
     #create display window
     SCREEN_HEIGHT = 500
@@ -47,10 +51,14 @@ def pygame_gui():
 
         screen.fill((202, 228, 241))
 
-        if start_button.draw(screen):
-            print('START')
-        if exit_button.draw(screen):
-            print('EXIT')
+        if allow_button:
+            # print("here")
+            start_button.draw(screen)
+                #print('START')
+            exit_button.draw(screen)
+                #print('EXIT')
+            
+            # allow_button = False
 
         #event handler
         for event in pygame.event.get():
@@ -76,8 +84,9 @@ while True:
     msg = client.recv(HEADER).decode(FORMAT) # receive message from server
     print(msg)
     if msg == ALLOW_SEND:
-        play = input("Play: ")
-        send(play)
+        allow_button = True
+        # play = input("Play: ")
+        # send(play)
     elif msg == DISCONNECT_MESSAGE:
         send(msg) # warn handle_client to end connection
         break
