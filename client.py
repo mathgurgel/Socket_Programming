@@ -52,12 +52,18 @@ def pygame_gui():
         screen.fill((202, 228, 241))
 
         if allow_button:
-            # print("here")
-            start_button.draw(screen)
-                #print('START')
-            exit_button.draw(screen)
-                #print('EXIT')
             
+            # draw buttons
+            start_button.draw(screen)
+            exit_button.draw(screen)
+            
+            if start_button.was_clicked():
+                send("rock")
+                allow_button = False
+            if exit_button.was_clicked():
+                send("paper")
+                allow_button = False
+
             # allow_button = False
 
         #event handler
