@@ -1,6 +1,7 @@
 import socket 
 import threading
 import time
+import pygame
 
 HEADER = 64
 PORT = 5050
