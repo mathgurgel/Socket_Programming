@@ -114,6 +114,12 @@ def game_result():
         conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
         print("disconnect sent\n")
 
+def verifyWin():
+    global players
+
+    for [num_wins, (conn, _)] in players:
+        if num_wins == 3:
+            game_result()
 
 def game():
 
@@ -157,6 +163,7 @@ def game():
             time.sleep(SLEEP_TIME) # delay for OS work
 
             if num_rounds != 5:
+                verifyWin()
                 conn.send(ALLOW_SEND.encode(FORMAT))
                 print("ok sent\n")
             elif (count % 2) == 0: # max of rounds, game end, sent match result to both clients
