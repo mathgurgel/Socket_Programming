@@ -180,13 +180,15 @@ def start(): # start the socket server
 
         num_wins = 0
         players.append([num_wins, (conn, addr)]) # add client to list of players
-        conn.send(ALLOW_SEND.encode(FORMAT)) # allows client to send messages
 
         active_connections = threading.active_count() - 1 # minus the start thread
         print(f"[ACTIVE CONNECTIONS] {active_connections}") 
         if active_connections == 1:
             print("Waiting for another player") # (ADD LATER) send to connected client as well
+            conn.send("Waiting for player".encode(FORMAT))
         elif active_connections == 2:
+            for [_, (conn, _)] in players:
+                conn.send(ALLOW_SEND.encode(FORMAT)) # allows clients to send messages
             break
 
     while num_rounds < 5:
