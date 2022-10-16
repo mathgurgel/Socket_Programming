@@ -67,7 +67,7 @@ def pygame_gui():
                 send("paper")
                 allow_button = False
             if scr_button.was_clicked():
-                send("scissor")
+                send("scissors")
                 allow_button = False
             # allow_button = False
 
