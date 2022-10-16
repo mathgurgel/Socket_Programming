@@ -33,28 +33,31 @@ def pygame_gui():
 
     global allow_button
 
-    #create display window
-    SCREEN_HEIGHT = 500
-    SCREEN_WIDTH = 800
+    # create display window
+    SCREEN_WIDTH = 640
+    SCREEN_HEIGHT = 480
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Button Demo')
+    bg = pygame.image.load('graphics/bg.png').convert_alpha()
+    bg = pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    #load button images
-    rock_img = pygame.image.load('graphics/rockbtt.png').convert_alpha()
-    paper_img = pygame.image.load('graphics/paperbtt.png').convert_alpha()
-    scr_img = pygame.image.load('graphics/scrbtt.png').convert_alpha()
+    # load button images
+    rock_img = pygame.image.load('graphics/rock.png').convert_alpha()
+    paper_img = pygame.image.load('graphics/paper.png').convert_alpha()
+    scr_img = pygame.image.load('graphics/scissors.png').convert_alpha()
 
-    #create button instances
-    rock_button = button.Button(100, 200, rock_img, 1)
-    paper_button = button.Button(300, 200, paper_img, 1)
-    scr_button = button.Button(500, 200, scr_img, 1)
+    # create button instances
+    rock_button = button.Button(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2, rock_img, 0.15)
+    paper_button = button.Button(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, paper_img, 0.15)
+    scr_button = button.Button(SCREEN_WIDTH - (SCREEN_WIDTH / 5), SCREEN_HEIGHT / 2, scr_img, 0.15)
 
-    #game loop
+    # game loop
     run = True
     while run:
 
         screen.fill((202, 228, 241))
+        screen.blit(bg, (0, 0))
 
         if allow_button:
             
@@ -73,9 +76,9 @@ def pygame_gui():
                 send("scissors")
                 allow_button = False
 
-        #event handler
+        # event handler
         for event in pygame.event.get():
-            #quit game
+            # quit game
             if event.type == pygame.QUIT:
                 run = False
 
