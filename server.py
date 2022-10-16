@@ -1,7 +1,6 @@
 import socket 
 import threading
 import time
-import pygame
 
 HEADER = 64
 PORT = 5050
@@ -115,12 +114,15 @@ def game_result():
         conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
         print("disconnect sent\n")
 
-def verifyWin():
+def game_end():
+
     global players
 
-    for [num_wins, (conn, _)] in players:
+    for [num_wins, _] in players:
         if num_wins == 3:
-            game_result()
+            return True
+    
+    return False
 
 def game():
 
@@ -164,17 +166,16 @@ def game():
             time.sleep(SLEEP_TIME) # delay for OS work
         
         for [_, (conn, _)] in players:
-            if num_rounds != 5:
-                verifyWin()
+            if not game_end():
                 conn.send(ALLOW_SEND.encode(FORMAT))
                 print("ok sent\n")
-            elif (count % 2) == 0: # max of rounds, game end, sent match result to both clients
+            else:
                 is_game = False
             
         plays = []
 
-    if num_rounds == 5:
-        game_result()
+    if game_end():
+        game_result() # send match result to both clients
 
 
 def start(): # start the socket server
@@ -199,7 +200,7 @@ def start(): # start the socket server
                 conn.send(ALLOW_SEND.encode(FORMAT)) # allows clients to send messages
             break
 
-    while num_rounds < 5:
+    while not game_end():
         game()
 
 print("[STARTING] server is starting...")
