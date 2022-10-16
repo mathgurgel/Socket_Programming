@@ -72,6 +72,7 @@ def incr_num_wins(winner_addr):
 
 
 SLEEP_TIME = 0.1
+SHOW_TIME = 2.0
 
 PLAY_POS = 0
 WINS_POS = 0
@@ -92,8 +93,8 @@ def game_result():
     time.sleep(SLEEP_TIME) # delay for OS work
 
     if p1_num_wins == p2_num_wins: # tie
-        p1_conn.send("Final result is a TIE!\n".encode(FORMAT))
-        p2_conn.send("Final result is a TIE!\n".encode(FORMAT))
+        p1_conn.send("Final result is a TIE!".encode(FORMAT))
+        p2_conn.send("Final result is a TIE!".encode(FORMAT))
     else: 
         if p1_num_wins > p2_num_wins: # p1 won
             winner_conn = p1_conn
@@ -102,15 +103,17 @@ def game_result():
             winner_conn = p2_conn
             loser_conn  = p1_conn
 
-        winner_conn.send("You won the game!\n".encode(FORMAT))
-        loser_conn.send("You lose the game!\n".encode(FORMAT))
+        winner_conn.send("You won the game!".encode(FORMAT))
+        loser_conn.send("You lose the game!".encode(FORMAT))
     
-    time.sleep(SLEEP_TIME)
+    time.sleep(SHOW_TIME)
 
     for [num_wins, (conn, _)] in players:
-        conn.send(f"Number of wins: {num_wins}\n".encode(FORMAT))
+        conn.send(f"Number of wins: {num_wins}".encode(FORMAT))
         time.sleep(SLEEP_TIME)
+    time.sleep(SHOW_TIME)
 
+    for [_, (conn, _)] in players:
         conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
         print("disconnect sent\n")
 
@@ -156,15 +159,16 @@ def game():
             if handleWin != TIE:
                 if msg == handleWin:
                     incr_num_wins(addr)
-                    conn.send("You WON\n".encode(FORMAT))
+                    conn.send("You WON".encode(FORMAT))
                 else:
-                    conn.send("You LOSE\n".encode(FORMAT))
+                    conn.send("You LOSE".encode(FORMAT))
             else:
-                conn.send("TIE\n".encode(FORMAT))
+                conn.send("TIE".encode(FORMAT))
             print("result sent")
             
             time.sleep(SLEEP_TIME) # delay for OS work
         
+        time.sleep(SHOW_TIME)
         for [_, (conn, _)] in players:
             if not game_end():
                 conn.send(ALLOW_SEND.encode(FORMAT))
