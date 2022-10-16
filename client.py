@@ -38,12 +38,14 @@ def pygame_gui():
     pygame.display.set_caption('Button Demo')
 
     #load button images
-    start_img = pygame.image.load('graphics/start_btn.png').convert_alpha()
-    exit_img = pygame.image.load('graphics/exit_btn.png').convert_alpha()
+    rock_img = pygame.image.load('graphics/rockbtt.png').convert_alpha()
+    paper_img = pygame.image.load('graphics/paperbtt.png').convert_alpha()
+    scr_img = pygame.image.load('graphics/scrbtt.png').convert_alpha()
 
     #create button instances
-    start_button = button.Button(100, 200, start_img, 0.8)
-    exit_button = button.Button(450, 200, exit_img, 0.8)
+    rock_button = button.Button(100, 200, rock_img, 0.8)
+    paper_button = button.Button(300, 200, paper_img, 0.8)
+    scr_button = button.Button(500, 200, scr_img, 0.8)
 
     #game loop
     run = True
@@ -54,16 +56,19 @@ def pygame_gui():
         if allow_button:
             
             # draw buttons
-            start_button.draw(screen)
-            exit_button.draw(screen)
+            rock_button.draw(screen)
+            paper_button.draw(screen)
+            scr_button.draw(screen)
             
-            if start_button.was_clicked():
+            if rock_button.was_clicked():
                 send("rock")
                 allow_button = False
-            if exit_button.was_clicked():
+            if paper_button.was_clicked():
                 send("paper")
                 allow_button = False
-
+            if scr_button.was_clicked():
+                send("scissor")
+                allow_button = False
             # allow_button = False
 
         #event handler
