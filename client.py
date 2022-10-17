@@ -13,7 +13,10 @@ DISCONNECT_MESSAGE = "DISCONNECT"
 ALLOW_SEND = "OK"
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
+SPACE_FOR_INIT = "INIT"
+
 allow_button = False
+space_for_init = False
 game_end = False
 new_display_msg = False
 recv_msg = ""
@@ -21,15 +24,7 @@ recv_msg = ""
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
-# needed for sound
-pygame.init()
-
-bg_music = pygame.mixer.Sound('audio/jojo.mp3')
-bg_music.play(loops = -1)
-bg_music.set_volume(0.05)
-
 def send(msg):
-
     message = msg.encode(FORMAT) # encode the string to bytes
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT) # first send size of the message
@@ -37,12 +32,16 @@ def send(msg):
     client.send(send_length)
     client.send(message)
 
-
 def pygame_gui():
 
     pygame.init()
 
+    bg_music = pygame.mixer.Sound('audio/jojo.mp3')
+    bg_music.play(loops = -1)
+    bg_music.set_volume(0.05)
+
     global allow_button
+    global space_for_init
     global new_display_msg
     global recv_msg
 
@@ -71,14 +70,15 @@ def pygame_gui():
     # game loop
     run = True
     while run:
-
         screen.fill((202, 228, 241))
         screen.blit(bg, (0, 0))
+
+        if game_end:
+            run = False
 
         if allow_button:
 
             new_display_msg = False # already displayed
-
             # draw buttons
             rock_button.draw(screen)
             paper_button.draw(screen)
@@ -94,8 +94,12 @@ def pygame_gui():
                 send("scissors")
                 allow_button = False
 
-        elif new_display_msg:
+        elif space_for_init:
+            display_space_for_init = main_font.render('Press space to play', False, (255, 255, 255))
+            display_space_for_init_rect = display_space_for_init.get_rect(center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
+            screen.blit(display_space_for_init, display_space_for_init_rect)
 
+        elif new_display_msg:
             display_msg = main_font.render(recv_msg, False, (255, 255, 255))
             display_msg_rect = display_msg.get_rect(center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
             screen.blit(display_msg, display_msg_rect)
@@ -105,12 +109,15 @@ def pygame_gui():
             # quit game
             if event.type == pygame.QUIT:
                 run = False
+            
+            elif space_for_init and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    space_for_init = False
+                    send(ALLOW_SEND)
 
-        if game_end:
-            run = False
 
         pygame.display.update()
-
+    
     pygame.quit()
     exit()
 
@@ -124,6 +131,8 @@ while True:
     print(msg)
     if msg == ALLOW_SEND:
         allow_button = True
+    elif msg == SPACE_FOR_INIT:
+        space_for_init = True
     elif msg == DISCONNECT_MESSAGE:
         game_end = True
         send(msg) # warn handle_client to end connection

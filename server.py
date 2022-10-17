@@ -9,6 +9,8 @@ ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "DISCONNECT"
 ALLOW_SEND = "OK"
+SPACE_FOR_INIT = "INIT"
+TIE = "tie"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 server.bind(ADDR) 
@@ -17,9 +19,7 @@ players = []   # list of players. type :: [Int, (Conn, Addr)]
 plays = []     # plays made at some round. type :: [String, [Conn, Adr]]
 num_rounds = 0 # number of game rounds
 
-
 def handle_client(conn, addr):
-    
     print(f"[NEW CONNECTION] {addr} connected.")
 
     connected = True
@@ -30,17 +30,23 @@ def handle_client(conn, addr):
             msg_length = int(msg_length) # how many bytes
             msg = conn.recv(msg_length).decode(FORMAT)
 
-            if msg != DISCONNECT_MESSAGE:
+            if msg == ALLOW_SEND:
+                conn.send(ALLOW_SEND.encode(FORMAT))
+
+            elif msg != DISCONNECT_MESSAGE and msg != SPACE_FOR_INIT:
                 global plays
                 plays.append([msg, [conn, addr]])
-            else:
+
+            elif msg == DISCONNECT_MESSAGE:
                 connected = False
+            # if msg != DISCONNECT_MESSAGE:
+            #     global plays
+            #     plays.append([msg, [conn, addr]])
+            # else:
+            #     connected = False
 
     conn.close()
     print("Connection closed\n")
-
-
-TIE = "tie"
 
 def handleResult(jogadaPlayer1, jogadaPlayer2):
 
@@ -111,6 +117,7 @@ def game_result():
     for [num_wins, (conn, _)] in players:
         conn.send(f"Number of wins: {num_wins}".encode(FORMAT))
         time.sleep(SLEEP_TIME)
+    
     time.sleep(SHOW_TIME)
 
     for [_, (conn, _)] in players:
@@ -132,7 +139,6 @@ def game_end():
     return False
 
 def game():
-
     global plays
     global players
     global num_rounds
@@ -205,7 +211,8 @@ def start(): # start the socket server
             conn.send("Waiting for player".encode(FORMAT))
         elif active_connections == 2:
             for [_, (conn, _)] in players:
-                conn.send(ALLOW_SEND.encode(FORMAT)) # allows clients to send messages
+                conn.send(SPACE_FOR_INIT.encode(FORMAT))
+                # conn.send(ALLOW_SEND.encode(FORMAT)) # allows clients to send messages
             break
 
     while not game_end():
