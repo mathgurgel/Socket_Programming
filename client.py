@@ -21,6 +21,13 @@ recv_msg = ""
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
+# needed for sound
+pygame.init()
+
+bg_music = pygame.mixer.Sound('audio/jojo.mp3')
+bg_music.play(loops = -1)
+bg_music.set_volume(0.05)
+
 def send(msg):
 
     message = msg.encode(FORMAT) # encode the string to bytes
