@@ -120,6 +120,10 @@ def game_result():
 def game_end():
 
     global players
+    global num_rounds
+
+    if num_rounds == 5:
+        return True
 
     for [num_wins, _] in players:
         if num_wins == 3:
