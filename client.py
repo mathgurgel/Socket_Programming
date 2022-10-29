@@ -1,10 +1,8 @@
 import socket
-import tkinter as tk
 import threading
 import pygame
 import button
 from sys import exit
-import time
 
 HEADER = 64
 PORT = 5050
@@ -22,6 +20,7 @@ display_logo = True
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
+
 
 def send(msg):
 

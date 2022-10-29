@@ -16,7 +16,7 @@ server.bind(ADDR)
 players = []   # list of players. type :: [Int, (Conn, Addr)]
 plays = []     # plays made at some round. type :: [String, [Conn, Adr]]
 num_rounds = 0 # number of game rounds
-num_ties = 0   # number of tie rounds
+total_ties = 0 # number of tie rounds (x2)
 
 
 def handle_client(conn, addr):
@@ -112,7 +112,10 @@ def game_result():
     time.sleep(SHOW_TIME)
 
     for [num_wins, (conn, _)] in players:
-        conn.send(f"Wins: {num_wins} Loses: {num_rounds - num_wins - (int(num_ties / 2))} Ties: {int(num_ties / 2)}".encode(FORMAT))
+        num_ties = int(total_ties / 2)
+        num_loses = num_rounds - num_wins - num_ties
+
+        conn.send(f"Wins: {num_wins} Loses: {num_loses} Ties: {num_ties}".encode(FORMAT))
         time.sleep(SLEEP_TIME)
     time.sleep(SHOW_TIME)
 
@@ -139,7 +142,7 @@ def game():
     global plays
     global players
     global num_rounds
-    global num_ties
+    global total_ties
 
     if len(plays) == 2:
         is_game = True
@@ -171,7 +174,7 @@ def game():
                 else:
                     conn.send("You LOSE".encode(FORMAT))
             else:
-                num_ties = num_ties + 1
+                total_ties = total_ties + 1
                 conn.send("TIE".encode(FORMAT))
             print("result sent")
             
